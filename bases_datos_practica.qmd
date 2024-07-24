@@ -1,0 +1,195 @@
+---
+title: "Practicando con bases de datos"
+author: "Denisse Fierro Arcos"
+format: html
+editor: source
+---
+
+## Cargando paquetes necesarios
+
+```{r}
+library(RSQLite)
+library(DBI)
+library(readr)
+library(dplyr)
+```
+
+## Conexión a una base de datos
+
+```{r}
+#Establecer conexión a una base de datos SQLite en memoria
+con <- dbConnect(RSQLite::SQLite(), dbname = ":memory:")
+
+#Verificamos el contenido de esta base de datos
+dbListTables(con)
+```
+  
+Notamos que está vacía, por lo que procederemos a cargar datos en ella. Primero vamos a cargar datos que bajamos de GBIF. (GBIF.org (23 July 2024) GBIF Occurrence Download https://doi.org/10.15468/dl.wychnv)
+
+```{r}
+#Cargar datos de un archivo de texto
+occ <- read_delim("molfax/occurrence.txt", delim = "\t")
+
+#Verificar la estructura de los datos
+str(occ)
+```
+
+Podemos notar que tenemos una gran cantidad de filas y columnas en este set de datos. Vamos a crear una base de datos en memoria y cargar estos datos en ella.
+
+```{r}
+#Cargamos los datos y los llamaremos molfax por la especie a la que representan
+#Mycteroperca olfax (bacalao)
+dbWriteTable(con, "molfax", occ)
+
+#Podemos verificar que la base de datos existe
+dbListTables(con)
+```
+
+Ahora podemos ver la información de resumen de la tabla `molfax`.
+
+```{r}
+summary (con)
+dbGetInfo(con)
+
+#Podemos ver también los nombres de las columnas
+dbListFields(con, "molfax")
+```
+  
+## Cargar datos desde una base de datos
+
+```{r}
+molfax <- dbReadTable(con, "molfax")
+head(molfax)
+```
+
+## Creando una consulta
+Vamos a seleccionar todas las filas para las que el año sea mayor o igual a 2015.
+
+```{r}
+#Creando consulta
+query <- "Select * from molfax where year >= 2015"
+
+#Aplicando consulta
+molfax_2015 <- dbGetQuery(con, query)
+head(molfax_2015)
+```
+
+Podemos seleccionar columnas específicas de la tabla `molfax`.
+
+```{r}
+#Creando consulta
+query <- "Select institutionCode, year from molfax where year >= 2015"
+
+#Podemos enviarla 
+consulta_molfax <- dbSendQuery(con, query)
+#Verificar que obtendremos
+dbColumnInfo(consulta_molfax)
+
+#Obtenemos los resultados - Veremos las primeras 10 filas solamente
+dbFetch(consulta_molfax, n = 10)
+
+#Finalmente podemos remover la consulta
+dbClearResult(consulta_molfax)
+```
+
+## Agregando datos en una tabla
+
+```{r}
+#Creamos datos
+dfDatos_Prueba <- data.frame(CodPrueba = c(1:26),
+                             Nombre_Prueba = c(letters[1:26]))
+
+#Verificamos datos en base de datos
+dbListTables(con)
+
+#Agregamos datos que creamos arriba a la base de datos
+dbWriteTable(con, "DatosPrueba", dfDatos_Prueba, overwrite = TRUE, 
+             row.names = FALSE)
+
+#Verificamos que se haya agregado
+dbListTables(con)
+```   
+
+## Actualizando datos en una tabla
+
+```{r}
+#Actualizamos datos
+dfDatos_Prueba <- dbReadTable(con, "DatosPrueba")
+
+#Agregamos un nuevo nombre
+dfDatos_Prueba$Nombre_Prueba[25] <- "Denisse"
+
+#Ahora reescribimos la tabla
+dbWriteTable(con, "DatosPrueba", dfDatos_Prueba, overwrite = TRUE, 
+             row.names = FALSE)
+
+#Verificamos que se haya actualizado
+dfDatos_Prueba_Modificado <- dbReadTable(con, "DatosPrueba")
+tail(dfDatos_Prueba_Modificado)
+```
+
+Podemos también incluir un nuevo registro en los `DatosPrueba`.
+
+```{r}
+#Agregamos un nuevo registro - Primero convertimos en lista
+dfDatos_Prueba_Modificado[27,] <- c(27, "RLadies")
+tail(dfDatos_Prueba_Modificado)
+
+#Ahora reescribimos la tabla
+dbWriteTable(con, "DatosPrueba", dfDatos_Prueba_Modificado, overwrite = TRUE,
+             row.names = FALSE)
+
+#Verificamos que se haya actualizado
+tail(dbReadTable(con, "DatosPrueba"))
+```
+
+Otra manera de agregar datos es con SQL.
+
+```{r}
+SQL_Insercion ="insert into DatosPrueba VALUES (28, 'Otro nombre')"
+ 
+dbSendQuery(con, SQL_Insercion)
+
+tail(dbReadTable(con, "DatosPrueba"))
+```
+
+## Eliminando datos de una tabla
+
+```{r}
+#Cargamos la base de datos
+dfDatos_Prueba <- dbReadTable(con, "DatosPrueba") |> 
+  #Eliminamos un registro
+  filter(CodPrueba != 2)
+
+#Verificamos que se haya eliminado
+dfDatos_Prueba
+
+#Reescribimos la tabla
+dbWriteTable(con, "DatosPrueba", dfDatos_Prueba, overwrite = TRUE, 
+             row.names = FALSE)
+
+dbReadTable(con, "DatosPrueba")
+```
+
+También podemos eliminar registros con SQL.
+
+```{r}
+SQL_Eliminacion = "delete from DatosPrueba where CodPrueba < 5"
+dbSendQuery(con, SQL_Eliminacion)
+
+dbReadTable(con, "DatosPrueba")
+```
+
+Podemos eliminar una tabla completa.
+
+```{r}
+dbSendQuery(con, "drop table DatosPrueba")
+
+dbListTables(con)
+```
+
+Finalmente cerramos la conexión.
+```{r}
+dbDisconnect(con)
+```
+

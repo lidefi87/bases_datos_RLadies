@@ -19,17 +19,16 @@ Es una colección de datos organizados de tal manera que se puedan acceder, gest
 
 ## SQL y las bases de datos
 
-SQL se refiere al lenguaje estructurado de consulta (Structured Query Language) y es un lenguaje de programación especializado en la gestión de bases de datos relacionales.   
-  
-SQL es un lenguaje declarativo, lo que significa que el usuario le dice a la base de datos qué hacer, pero no cómo hacerlo.  
-  
-Existen varias versiones de SQL, tanto proprietarias (por ej., MySQL, PostgreSQL, SQLite), así como versiones de acceso abierto (por ej., MariaDB).
+SQL se refiere al lenguaje estructurado de consulta (Structured Query Language) y es un lenguaje de programación especializado en la gestión de bases de datos relacionales.
 
+SQL es un lenguaje declarativo, lo que significa que el usuario le dice a la base de datos qué hacer, pero no cómo hacerlo.
+
+Existen varias versiones de SQL, tanto proprietarias (por ej., MySQL, PostgreSQL, SQLite), así como versiones de acceso abierto (por ej., MariaDB).
 
 ## SQL en R
 
-Existe un paquete en R llamado `RSQLite` que nos permite conectarnos a bases de datos MySQL. También usaremos el paquete `DBI` para conectarnos a bases de datos relacionales. 
-  
+Existe un paquete en R llamado `RSQLite` que nos permite conectarnos a bases de datos MySQL. También usaremos el paquete `DBI` para conectarnos a bases de datos relacionales.
+
 Para instalar estos paquetes, debes ejecutar los siguientes comandos:
 
 ```{r}
@@ -38,12 +37,9 @@ Para instalar estos paquetes, debes ejecutar los siguientes comandos:
 install.packages("RSQLite")
 install.packages("DBI")
 ```
-  
+
 Recuerda que solo es necesario instalar este paquete una sola vez. Nota también que debes tener instalado SQL en tu computadora para poder usar estos paquetes.
 
 ## Hora de trabajar con bases de datos en R
 
-
-
-
-  
+Puedes seguir el código en este repositorio: <https://github.com/lidefi87/bases_datos_RLadies>.

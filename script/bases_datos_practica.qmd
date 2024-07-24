@@ -28,7 +28,7 @@ Notamos que está vacía, por lo que procederemos a cargar datos en ella. Primer
 
 ```{r}
 #Cargar datos de un archivo de texto
-occ <- read_delim("molfax/occurrence.txt", delim = "\t")
+occ <- read_delim("datos/occurrence.txt", delim = "\t")
 
 #Verificar la estructura de los datos
 str(occ)
